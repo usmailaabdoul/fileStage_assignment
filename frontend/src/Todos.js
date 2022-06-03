@@ -11,29 +11,12 @@ import {
   Checkbox,
 } from "@material-ui/core";
 
+import { DraggableList } from './components';
+import { reOrderTodos } from './utils';
+
 const useStyles = makeStyles({
   addTodoContainer: { padding: 10 },
   addTodoButton: { marginLeft: 5 },
-  todosContainer: { marginTop: 10, padding: 10 },
-  todoContainer: {
-    borderTop: "1px solid #bfbfbf",
-    marginTop: 5,
-    "&:first-child": {
-      margin: 0,
-      borderTop: "none",
-    },
-    "&:hover": {
-      "& $deleteTodo": {
-        visibility: "visible",
-      },
-    },
-  },
-  todoTextCompleted: {
-    textDecoration: "line-through",
-  },
-  deleteTodo: {
-    visibility: "hidden",
-  },
 });
 
 function Todos() {
@@ -42,10 +25,14 @@ function Todos() {
   const [newTodoText, setNewTodoText] = useState("");
 
   useEffect(() => {
+    fetchAllTodos()
+  }, []);
+
+  const fetchAllTodos = () => {
     fetch("http://localhost:3001/")
       .then((response) => response.json())
       .then((todos) => setTodos(todos));
-  }, [setTodos]);
+  }
 
   function addTodo(text) {
     fetch("http://localhost:3001/", {
@@ -88,6 +75,55 @@ function Todos() {
     }).then(() => setTodos(todos.filter((todo) => todo.id !== id)));
   }
 
+  const onDragEnd = ({ destination, source }) => {
+    const currEleID = todos[source.index].id
+    let prevElIndexNumber;
+    let nextElIndexNumber;
+
+    // dropped outside the list
+    if (!destination) return;
+
+    console.log({ todos })
+
+    console.log({ prev: todos[destination.index - 1]?.index_number ?? undefined, next: todos[destination.index + 1]?.index_number ?? undefined, curr: todos[source.index] })
+
+    if (todos[destination.index - 1]) {
+      prevElIndexNumber = todos[destination.index].index_number;
+    }
+
+    if (todos[destination.index + 1]) {
+      nextElIndexNumber = todos[destination.index].index_number;
+    }
+    // if (todos[destination.index + 1] && todos[destination.index - 1]) {
+    //   nextElIndexNumber = todos[destination.index + 1].index_number;
+    // }
+
+    // if (todos[destination.index + 1] && !todos[destination.index - 1]) {
+    //   nextElIndexNumber = todos[destination.index].index_number;
+    // }
+
+    console.log({ prevNum: prevElIndexNumber, nextNum: nextElIndexNumber })
+
+    const newTodos = reOrderTodos(todos, source.index, destination.index);
+    console.log({ newTodos })
+    setTodos(newTodos);
+
+    fetch(`http://localhost:3001/order-todos/${currEleID}`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: JSON.stringify({
+        prevElIndexNumber,
+        nextElIndexNumber
+      }),
+    }).then()
+      .catch(e => {
+        fetchAllTodos()
+      })
+  };
+
   return (
     <Container maxWidth="md">
       <Typography variant="h3" component="h1" gutterBottom>
@@ -116,40 +152,9 @@ function Todos() {
           </Button>
         </Box>
       </Paper>
+
       {todos.length > 0 && (
-        <Paper className={classes.todosContainer}>
-          <Box display="flex" flexDirection="column" alignItems="stretch">
-            {todos.map(({ id, text, completed }) => (
-              <Box
-                key={id}
-                display="flex"
-                flexDirection="row"
-                alignItems="center"
-                className={classes.todoContainer}
-              >
-                <Checkbox
-                  checked={completed}
-                  onChange={() => toggleTodoCompleted(id)}
-                ></Checkbox>
-                <Box flexGrow={1}>
-                  <Typography
-                    className={completed ? classes.todoTextCompleted : ""}
-                    variant="body1"
-                  >
-                    {text}
-                  </Typography>
-                </Box>
-                <Button
-                  className={classes.deleteTodo}
-                  startIcon={<Icon>delete</Icon>}
-                  onClick={() => deleteTodo(id)}
-                >
-                  Delete
-                </Button>
-              </Box>
-            ))}
-          </Box>
-        </Paper>
+        <DraggableList {...{ todos, toggleTodoCompleted, deleteTodo, onDragEnd }}></DraggableList>
       )}
     </Container>
   );

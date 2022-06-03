@@ -30,7 +30,8 @@ app.get('/', async (req, res) => {
   const todos = database.client.db('todos').collection('todos');
   // TODO - PAGINATION TASK: the end point will have a new value (pageNum) to determine which page
   // number to query from, using mongo db
-  const response = await todos.find({}).sort({ position: 1 }).toArray();
+  const response = await todos.find({}).sort({ index_number: 1 }).toArray();
+  console.log(response);
   res.status(200);
   res.json(response);
 });
@@ -48,10 +49,9 @@ app.post('/', async (req, res) => {
     .limit(1);
   lastEle = await lastEle.toArray();
 
-  const todoPosition = lastEle.length > 0 ? lastEle[0].position + 1 : 1;
-
+  const index = lastEle.length > 0 ? lastEle[0].index_number + 1024 : 1024;
   const todo = {
-    id: generateId(), text, completed: false, position: todoPosition,
+    id: generateId(), text, completed: false, index_number: index, updated_at: new Date(),
   };
 
   // TODO - SORTING TASK: Get the last element in the db and gets is position and increment this
@@ -59,34 +59,73 @@ app.post('/', async (req, res) => {
 
   // TODO - DUE DATE TASK: We will need to add a due date value, when data is returned the filter
   // can can be handled on the front end
+
   await database.client.db('todos').collection('todos').insertOne(todo);
   res.status(201);
   res.json(todo);
 });
 
-// TODO - SORTING TASK: Add an end point for the sorting it should have 2 values (from and to), we
-// will use this to update the 2 todos who's position have been updated
-app.put('/sort/:id', async (req, res) => {
+app.put('/order-todos/:id', async (req, res) => {
   const { id } = req.params;
-  const { from, to } = req.body;
+  const todos = database.client.db('todos').collection('todos');
 
-  if (from === 0 || to === 0 || id === '') {
-    res.status(400);
-    res.json({ message: "invalid 'from' or 'to' parameters are required" });
-    return;
+  const { prevElIndexNumber, nextElIndexNumber } = req.body;
+  let currElIndexNumber;
+
+  if (prevElIndexNumber === undefined) {
+    currElIndexNumber = nextElIndexNumber - 512;
+  } else if (nextElIndexNumber === undefined) {
+    currElIndexNumber = prevElIndexNumber + 512;
+  } else {
+    currElIndexNumber = Math.floor((prevElIndexNumber + nextElIndexNumber) / 2);
   }
 
-  const updateTodo = await database.client.db('todos').collection('todos').findOne({ position: to });
+  console.log({currElIndexNumber, prevElIndexNumber, nextElIndexNumber});
+  try {
+    await todos.updateOne({ id }, { $set: { index_number: currElIndexNumber } });
 
-  await database.client.db('todos').collection('todos').updateOne({ id },
-    { $set: { position: to } });
-  await database.client.db('todos').collection('todos').updateOne({ id: updateTodo.id },
-    { $set: { position: from } });
+    if (
+      Math.abs(currElIndexNumber - prevElIndexNumber) <= 1
+      || Math.abs(currElIndexNumber - nextElIndexNumber) <= 1
+    ) {
+      // eslint-disable-next-line no-underscore-dangle
+      const _todos = await todos.find({}).sort({ index_number: 1 }).toArray();
+      const sameIndexNums = [];
+      const indexs = [];
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < _todos.length; i++) {
+        if (_todos[i].index_number === currElIndexNumber) {
+          sameIndexNums.push(_todos[i]);
+          indexs.push(i);
+          if (_todos[i + 1] && _todos[i + 1].index_number === currElIndexNumber) {
+            sameIndexNums.push(_todos[i + 1]);
+            indexs.push(i + 1);
+          }
+          break;
+        }
+      }
 
-  const response = await database.client.db('todos').collection('todos').find({}).sort({ position: 1 })
-    .toArray();
-  res.status(200);
-  res.json(response);
+      sameIndexNums.sort((a, b) => b.updated_at - a.updated_at);
+      _todos.splice(indexs[0], 2);
+      _todos.splice(indexs[0], 0, ...sameIndexNums);
+
+      await Promise.all(
+        _todos.map(async (ele, i) => {
+          const newIndex = (i + 1) * 1024;
+
+          todos.updateOne({ id: ele.id }, {
+            $set: {
+              index_number: newIndex,
+              updated_at: new Date(),
+            },
+          });
+        }),
+      );
+    }
+    res.status(200);
+  } catch (e) {
+    res.status(500).send({ e });
+  }
 });
 
 app.put('/:id', async (req, res) => {
