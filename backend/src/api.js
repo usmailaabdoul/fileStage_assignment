@@ -3,7 +3,7 @@ const { v4: generateId } = require('uuid');
 const database = require('./database');
 
 const app = express();
-const pageSize = 5;
+const pageSize = 20;
 
 function requestLogger(req, res, next) {
   res.once('finish', () => {
@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', async (req, res) => {
-  const { pageNo } = req.query;
+  const { pageNo, filter } = req.query;
   const todos = database.client.db('todos').collection('todos');
 
   const query = {};
@@ -40,29 +40,32 @@ app.get('/', async (req, res) => {
   }
   query.skip = pageSize * (pageNo - 1);
   query.limit = pageSize;
-  console.log('before', { query });
-  const totalCount = await todos.countDocuments({});
+
+  // eslint-disable-next-line no-underscore-dangle
+  let _filter = {};
+  if (filter && filter.length > 0) {
+    _filter = { dueDate: filter };
+  }
+
+  const totalCount = await todos.countDocuments(_filter);
   const totalPages = Math.ceil(totalCount / pageSize);
 
   if (pageNo > totalPages) {
-    // query.skip = pageSize * (totalPages - 1);
-    response = { data: [], totalPages, currentPage: totalPages };
+    response = { data: [], totalPages, currentPage: totalPages === 0 ? 1 : totalPages };
     res.status(200);
     return res.json(response);
   }
 
-  console.log('after', { query });
+  const data = await todos.find(_filter, query).sort({ index_number: 1 }).toArray();
 
-  const data = await todos.find({}, query).sort({ index_number: 1 }).toArray();
-
-  response = { data, totalPages, currentPage: pageNo };
+  response = { data, totalPages, currentPage: Number(pageNo) };
   console.log(response);
   res.status(200);
   return res.json(response);
 });
 
 app.post('/', async (req, res) => {
-  const { text } = req.body;
+  const { text, dueDate } = req.body;
   const todos = database.client.db('todos').collection('todos');
 
   if (typeof text !== 'string') {
@@ -82,11 +85,8 @@ app.post('/', async (req, res) => {
     completed: false,
     index_number: index,
     updated_at: new Date(),
-    dueDate: new Date(),
+    dueDate,
   };
-
-  // TODO - DUE DATE TASK: We will need to add a due date value, when data is returned the filter
-  // can can be handled on the front end
 
   await todos.insertOne(todo);
 

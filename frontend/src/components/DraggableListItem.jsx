@@ -1,22 +1,16 @@
-import React from 'react'
-import { Draggable } from 'react-beautiful-dnd';
+import React from "react";
+import { Draggable } from "react-beautiful-dnd";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Typography,
-  Button,
-  Icon,
-  Paper,
-  Box,
-  Checkbox,
-} from "@material-ui/core";
+import { Typography, Button, Icon, Box, Checkbox } from "@material-ui/core";
+import moment from "moment";
 
 const useStyles = makeStyles({
   todoContainer: {
-    borderTop: "1px solid #bfbfbf",
-    marginTop: 5,
-    "&:first-child": {
+    borderBottom: "1px solid #bfbfbf",
+    marginBottom: 5,
+    "&:last-child": {
       margin: 0,
-      borderTop: "none",
+      borderBottom: "none",
     },
     "&:hover": {
       "& $deleteTodo": {
@@ -31,11 +25,19 @@ const useStyles = makeStyles({
     visibility: "hidden",
   },
   draggingListItem: {
-    background: 'rgb(235,235,235)'
-  }
+    background: "rgb(235,235,235)",
+  },
 });
 
-const DraggableListItem = ({id, text, dueDate, index, completed, toggleTodoCompleted, deleteTodo}) => {
+const DraggableListItem = ({
+  id,
+  text,
+  dueDate,
+  index,
+  completed,
+  toggleTodoCompleted,
+  deleteTodo,
+}) => {
   const classes = useStyles();
 
   return (
@@ -48,13 +50,18 @@ const DraggableListItem = ({id, text, dueDate, index, completed, toggleTodoCompl
           display="flex"
           flexDirection="row"
           alignItems="center"
-          className={[classes.todoContainer, snapshot.isDragging ? classes.draggingListItem : '']}
+          className={[
+            classes.todoContainer,
+            snapshot.isDragging ? classes.draggingListItem : "",
+          ]}
         >
-          <Checkbox
-            checked={completed}
-            onChange={() => toggleTodoCompleted(id)}
-          ></Checkbox>
           <Box flexGrow={1}>
+            <Checkbox
+              checked={completed}
+              onChange={() => toggleTodoCompleted(id)}
+            ></Checkbox>
+          </Box>
+          <Box flexGrow={4}>
             <Typography
               className={completed ? classes.todoTextCompleted : ""}
               variant="body1"
@@ -63,23 +70,21 @@ const DraggableListItem = ({id, text, dueDate, index, completed, toggleTodoCompl
             </Typography>
           </Box>
           <Box flexGrow={1}>
-            <Typography
-              variant="body1"
-            >
-              {dueDate}
-            </Typography>
+            <Typography variant="body1">{moment(dueDate).fromNow()}</Typography>
           </Box>
-          <Button
-            className={classes.deleteTodo}
-            startIcon={<Icon>delete</Icon>}
-            onClick={() => deleteTodo(id)}
-          >
-            Delete
-          </Button>
+          <Box flexGrow={1}>
+            <Button
+              className={classes.deleteTodo}
+              startIcon={<Icon>delete</Icon>}
+              onClick={() => deleteTodo(id)}
+            >
+              Delete
+            </Button>
+          </Box>
         </Box>
       )}
     </Draggable>
-  )
-}
+  );
+};
 
-export default DraggableListItem
+export default DraggableListItem;
