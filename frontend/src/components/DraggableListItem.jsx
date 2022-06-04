@@ -35,7 +35,7 @@ const useStyles = makeStyles({
   }
 });
 
-const DraggableListItem = ({id, text, index, completed, toggleTodoCompleted, deleteTodo}) => {
+const DraggableListItem = ({id, text, dueDate, index, completed, toggleTodoCompleted, deleteTodo}) => {
   const classes = useStyles();
 
   return (
@@ -60,6 +60,13 @@ const DraggableListItem = ({id, text, index, completed, toggleTodoCompleted, del
               variant="body1"
             >
               {text}
+            </Typography>
+          </Box>
+          <Box flexGrow={1}>
+            <Typography
+              variant="body1"
+            >
+              {dueDate}
             </Typography>
           </Box>
           <Button

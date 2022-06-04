@@ -3,6 +3,7 @@ const { v4: generateId } = require('uuid');
 const database = require('./database');
 
 const app = express();
+const pageSize = 5;
 
 function requestLogger(req, res, next) {
   res.once('finish', () => {
@@ -27,17 +28,42 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get('/', async (req, res) => {
+  const { pageNo } = req.query;
   const todos = database.client.db('todos').collection('todos');
-  // TODO - PAGINATION TASK: the end point will have a new value (pageNum) to determine which page
-  // number to query from, using mongo db
-  const response = await todos.find({}).sort({ index_number: 1 }).toArray();
+
+  const query = {};
+  let response;
+  if (pageNo < 0 || pageNo === 0) {
+    res.status(400);
+    res.json({ message: 'invalid page number, should start with 1' });
+    return res.json(response);
+  }
+  query.skip = pageSize * (pageNo - 1);
+  query.limit = pageSize;
+  console.log('before', { query });
+  const totalCount = await todos.countDocuments({});
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  if (pageNo > totalPages) {
+    // query.skip = pageSize * (totalPages - 1);
+    response = { data: [], totalPages, currentPage: totalPages };
+    res.status(200);
+    return res.json(response);
+  }
+
+  console.log('after', { query });
+
+  const data = await todos.find({}, query).sort({ index_number: 1 }).toArray();
+
+  response = { data, totalPages, currentPage: pageNo };
   console.log(response);
   res.status(200);
-  res.json(response);
+  return res.json(response);
 });
 
 app.post('/', async (req, res) => {
   const { text } = req.body;
+  const todos = database.client.db('todos').collection('todos');
 
   if (typeof text !== 'string') {
     res.status(400);
@@ -45,24 +71,30 @@ app.post('/', async (req, res) => {
     return;
   }
 
-  let lastEle = await database.client.db('todos').collection('todos').find({}).sort({ $natural: -1 })
+  let lastEle = await todos.find({}).sort({ $natural: -1 })
     .limit(1);
   lastEle = await lastEle.toArray();
 
   const index = lastEle.length > 0 ? lastEle[0].index_number + 1024 : 1024;
   const todo = {
-    id: generateId(), text, completed: false, index_number: index, updated_at: new Date(),
+    id: generateId(),
+    text,
+    completed: false,
+    index_number: index,
+    updated_at: new Date(),
+    dueDate: new Date(),
   };
-
-  // TODO - SORTING TASK: Get the last element in the db and gets is position and increment this
-  // value for the new todo
 
   // TODO - DUE DATE TASK: We will need to add a due date value, when data is returned the filter
   // can can be handled on the front end
 
-  await database.client.db('todos').collection('todos').insertOne(todo);
+  await todos.insertOne(todo);
+
+  const totalCount = await todos.countDocuments({});
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const response = { data: todo, totalPages };
   res.status(201);
-  res.json(todo);
+  res.json(response);
 });
 
 app.put('/order-todos/:id', async (req, res) => {
@@ -80,7 +112,7 @@ app.put('/order-todos/:id', async (req, res) => {
     currElIndexNumber = Math.floor((prevElIndexNumber + nextElIndexNumber) / 2);
   }
 
-  console.log({currElIndexNumber, prevElIndexNumber, nextElIndexNumber});
+  console.log({ currElIndexNumber, prevElIndexNumber, nextElIndexNumber });
   try {
     await todos.updateOne({ id }, { $set: { index_number: currElIndexNumber } });
 
