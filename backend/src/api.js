@@ -155,6 +155,7 @@ app.put('/order-todos/:id', async (req, res) => {
       );
     }
     res.status(200);
+    res.end();
   } catch (e) {
     res.status(500).send({ e });
   }

@@ -88,41 +88,43 @@ const DraggableList = ({
                     display="flex"
                     flexDirection="column"
                     alignItems="stretch"
+                    data-testid="draggable-list"
                   >
-                    {todos.map(({ id, text, completed, dueDate }, index) => {
-                      if (todos.length === index + 1) {
+                    {todos &&
+                      todos.map(({ id, text, completed, dueDate }, index) => {
+                        if (todos.length === index + 1) {
+                          return (
+                            <div ref={lastTodoElementRef} key={id}>
+                              <DraggableListItem
+                                key={id}
+                                {...{
+                                  id,
+                                  text,
+                                  index,
+                                  completed,
+                                  dueDate,
+                                  toggleTodoCompleted,
+                                  deleteTodo,
+                                }}
+                              ></DraggableListItem>
+                            </div>
+                          );
+                        }
                         return (
-                          <div ref={lastTodoElementRef} key={id}>
-                            <DraggableListItem
-                              key={id}
-                              {...{
-                                id,
-                                text,
-                                index,
-                                completed,
-                                dueDate,
-                                toggleTodoCompleted,
-                                deleteTodo,
-                              }}
-                            ></DraggableListItem>
-                          </div>
+                          <DraggableListItem
+                            key={id}
+                            {...{
+                              id,
+                              text,
+                              index,
+                              completed,
+                              dueDate,
+                              toggleTodoCompleted,
+                              deleteTodo,
+                            }}
+                          ></DraggableListItem>
                         );
-                      }
-                      return (
-                        <DraggableListItem
-                          key={id}
-                          {...{
-                            id,
-                            text,
-                            index,
-                            completed,
-                            dueDate,
-                            toggleTodoCompleted,
-                            deleteTodo,
-                          }}
-                        ></DraggableListItem>
-                      );
-                    })}
+                      })}
                     {provided.placeholder}
                   </Box>
                 </Paper>
