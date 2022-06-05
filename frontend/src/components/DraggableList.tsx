@@ -1,9 +1,14 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, FC } from "react";
 import { Paper, Box, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import {
+  DragDropContext,
+  Droppable,
+  OnDragEndResponder,
+} from "react-beautiful-dnd";
 
 import DraggableListItem from "./DraggableListItem";
+import { ITodos } from "../api/todo";
 
 const useStyles = makeStyles({
   todosContainer: { marginTop: 10, padding: 10 },
@@ -15,11 +20,21 @@ const useStyles = makeStyles({
   heading: {
     color: "#000",
     fontSize: "18px",
-    fontWeight: "700",
+    fontWeight: 700,
   },
 });
 
-const DraggableList = ({
+interface IDraggableList {
+  todos: ITodos["data"];
+  loading: boolean;
+  hasMore: boolean;
+  toggleTodoCompleted: (id: string) => void;
+  deleteTodo: (id: string) => void;
+  onDragEnd: OnDragEndResponder;
+  loadMore: () => void;
+}
+
+const DraggableList: FC<IDraggableList> = ({
   todos,
   toggleTodoCompleted,
   deleteTodo,
@@ -30,7 +45,7 @@ const DraggableList = ({
 }) => {
   const classes = useStyles();
 
-  const observer = useRef();
+  const observer = useRef<IntersectionObserver>();
   const lastTodoElementRef = useCallback(
     (node) => {
       if (loading) return;
@@ -48,7 +63,7 @@ const DraggableList = ({
   );
 
   return (
-    <Box className={classes.listArea}>
+    <Box>
       <Box
         display="flex"
         flex="1"

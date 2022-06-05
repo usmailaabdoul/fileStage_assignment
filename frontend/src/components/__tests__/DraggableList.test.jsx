@@ -8,7 +8,7 @@ describe("<DraggableList />", () => {
   it("should render properly", () => {
     const { getByText } = renderWithProvider(<DraggableList />);
 
-    expect(getByText("Status")).toBeVisible();
+    expect(getByText("Completed?")).toBeVisible();
     expect(getByText("Todo")).toBeVisible();
     expect(getByText("Due Date")).toBeVisible();
     expect(getByText("Action")).toBeVisible();

@@ -1,4 +1,4 @@
-import React from "react";
+import { FC } from "react";
 import { Button, Icon, Box, CircularProgress } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -22,7 +22,13 @@ const useStyles = makeStyles({
   },
 });
 
-const Footer = ({ loading, fetchedDueTodos, onClick }) => {
+interface IFooter {
+  loading: boolean;
+  fetchedDueTodos: boolean;
+  onClick: () => void;
+}
+
+const Footer: FC<IFooter> = ({ loading, fetchedDueTodos, onClick }) => {
   const classes = useStyles();
 
   return (

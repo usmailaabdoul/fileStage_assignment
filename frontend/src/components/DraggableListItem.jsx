@@ -1,6 +1,7 @@
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { makeStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
 import { Typography, Button, Icon, Box, Checkbox } from "@material-ui/core";
 import moment from "moment";
 
@@ -50,10 +51,10 @@ const DraggableListItem = ({
           display="flex"
           flex="1"
           alignItems="center"
-          className={[
+          className={clsx(
             classes.todoContainer,
-            snapshot.isDragging ? classes.draggingListItem : "",
-          ]}
+            snapshot.isDragging ? classes.draggingListItem : ""
+          )}
         >
           <Box flex={1}>
             <Checkbox
