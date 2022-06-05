@@ -17,17 +17,6 @@ const useStyles = makeStyles({
     fontSize: "18px",
     fontWeight: "700",
   },
-  listArea: {
-    backgroundColor: "#eee",
-    borderRadius: "5px",
-    marginTop: "10px",
-    padding: "10px",
-    height: "70vh",
-  },
-  lists: {
-    height: "95%",
-    overflow: "scroll",
-  },
 });
 
 const DraggableList = ({
@@ -48,6 +37,7 @@ const DraggableList = ({
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
+          console.log("fetching more...");
           loadMore();
         }
       });
@@ -61,78 +51,76 @@ const DraggableList = ({
     <Box className={classes.listArea}>
       <Box
         display="flex"
-        flexDirection="row"
+        flex="1"
         alignItems="center"
         className={classes.todoContainer}
       >
-        <Box flexGrow={1}>
-          <Typography className={classes.heading}>Status</Typography>
+        <Box flex={1}>
+          <Typography className={classes.heading}>Completed?</Typography>
         </Box>
-        <Box flexGrow={4} marginLeft={-5}>
+        <Box flex={3}>
           <Typography className={classes.heading}>Todo</Typography>
         </Box>
-        <Box flexGrow={1} marginLeft={-10}>
+        <Box flex={1}>
           <Typography className={classes.heading}>Due Date</Typography>
         </Box>
-        <Box flexGrow={1}>
+        <Box flex={1}>
           <Typography className={classes.heading}>Action</Typography>
         </Box>
       </Box>
-      <div className={classes.lists}>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="droppable-list">
-            {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
-                <Paper className={classes.todosContainer}>
-                  <Box
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="stretch"
-                    data-testid="draggable-list"
-                  >
-                    {todos &&
-                      todos.map(({ id, text, completed, dueDate }, index) => {
-                        if (todos.length === index + 1) {
-                          return (
-                            <div ref={lastTodoElementRef} key={id}>
-                              <DraggableListItem
-                                key={id}
-                                {...{
-                                  id,
-                                  text,
-                                  index,
-                                  completed,
-                                  dueDate,
-                                  toggleTodoCompleted,
-                                  deleteTodo,
-                                }}
-                              ></DraggableListItem>
-                            </div>
-                          );
-                        }
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="droppable-list">
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              <Paper className={classes.todosContainer}>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="stretch"
+                  data-testid="draggable-list"
+                >
+                  {todos &&
+                    todos.map(({ id, text, completed, dueDate }, index) => {
+                      if (todos.length === index + 1) {
                         return (
-                          <DraggableListItem
-                            key={id}
-                            {...{
-                              id,
-                              text,
-                              index,
-                              completed,
-                              dueDate,
-                              toggleTodoCompleted,
-                              deleteTodo,
-                            }}
-                          ></DraggableListItem>
+                          <div ref={lastTodoElementRef} key={id}>
+                            <DraggableListItem
+                              key={id}
+                              {...{
+                                id,
+                                text,
+                                index,
+                                completed,
+                                dueDate,
+                                toggleTodoCompleted,
+                                deleteTodo,
+                              }}
+                            ></DraggableListItem>
+                          </div>
                         );
-                      })}
-                    {provided.placeholder}
-                  </Box>
-                </Paper>
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </div>
+                      }
+                      return (
+                        <DraggableListItem
+                          key={id}
+                          {...{
+                            id,
+                            text,
+                            index,
+                            completed,
+                            dueDate,
+                            toggleTodoCompleted,
+                            deleteTodo,
+                          }}
+                        ></DraggableListItem>
+                      );
+                    })}
+                  {provided.placeholder}
+                </Box>
+              </Paper>
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </Box>
   );
 };

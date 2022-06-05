@@ -8,7 +8,7 @@ describe("<Footer />", () => {
   it("should render footer", () => {
     const { getByText } = renderWithProvider(<Footer />);
 
-    expect(getByText("See Due todos")).toBeVisible();
+    expect(getByText("Due today")).toBeVisible();
   });
 
   it("should be able to fetch Due Todos", () => {

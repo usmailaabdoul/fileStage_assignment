@@ -48,20 +48,20 @@ const DraggableListItem = ({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           display="flex"
-          flexDirection="row"
+          flex="1"
           alignItems="center"
           className={[
             classes.todoContainer,
             snapshot.isDragging ? classes.draggingListItem : "",
           ]}
         >
-          <Box flexGrow={1}>
+          <Box flex={1}>
             <Checkbox
               checked={completed}
               onChange={() => toggleTodoCompleted(id)}
             ></Checkbox>
           </Box>
-          <Box flexGrow={4}>
+          <Box flex={3}>
             <Typography
               className={completed ? classes.todoTextCompleted : ""}
               variant="body1"
@@ -69,10 +69,10 @@ const DraggableListItem = ({
               {text}
             </Typography>
           </Box>
-          <Box flexGrow={1}>
+          <Box flex={1}>
             <Typography variant="body1">{moment(dueDate).fromNow()}</Typography>
           </Box>
-          <Box flexGrow={1}>
+          <Box flex={1}>
             <Button
               className={classes.deleteTodo}
               startIcon={<Icon>delete</Icon>}

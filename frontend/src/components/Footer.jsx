@@ -33,7 +33,7 @@ const Footer = ({ loading, fetchedDueTodos, onClick }) => {
         onClick={onClick}
         data-testid="fetch-dueTodos-btn"
       >
-        {fetchedDueTodos ? "See All todos" : "See Due todos"}
+        {fetchedDueTodos ? "All todos" : "Due today"}
       </Button>
 
       {loading && (

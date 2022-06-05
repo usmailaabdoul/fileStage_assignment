@@ -20,6 +20,14 @@ const useStyles = makeStyles({
     right: "50px",
     width: "300px",
   },
+  listArea: {
+    backgroundColor: "#eee",
+    borderRadius: "5px",
+    marginTop: "10px",
+    height: "500px",
+    overflow: "scroll",
+    padding: "10px",
+  },
 });
 
 function Todos() {
@@ -31,7 +39,11 @@ function Todos() {
   const [currentPage, setCurrentPage] = useState(1);
   const [dueDate, setDueDate] = useState(new Date().toLocaleDateString());
   const [fetchedDueTodos, setFetchedDueTodos] = useState(false);
-  const [error, setError] = useState({ error: false, message: "" });
+  const [alert, setAlert] = useState({
+    alert: false,
+    message: "",
+    type: "error",
+  });
 
   const fetchAllTodos = async (page, filter) => {
     setLoading(true);
@@ -41,9 +53,13 @@ function Todos() {
       setCurrentPage(res.currentPage);
       setHasMore(res.totalPages > res.currentPage);
       setLoading(false);
+
+      if (res.data.length === 0 && filter.length > 0) {
+        setAlert({ alert: true, message: "No due todos today", type: "info" });
+      }
     } catch (error) {
       setLoading(false);
-      setError({ error: true, message: error.message });
+      setAlert({ alert: true, message: error.message });
     }
   };
 
@@ -52,20 +68,20 @@ function Todos() {
   }, []);
 
   useEffect(() => {
-    if (error.error) {
+    if (alert.alert) {
       setTimeout(() => {
-        setError({ error: false, message: "" });
+        setAlert({ alert: false, message: "" });
       }, 5000);
     }
-  }, [error]);
+  }, [alert]);
 
   const addTodo = async (text) => {
     setLoading(true);
 
     if (text.length === 0 || !dueDate) {
       setLoading(false);
-      return setError({
-        error: true,
+      return setAlert({
+        alert: true,
         message: "Enter valid text and due Date to proceed",
       });
     }
@@ -84,7 +100,7 @@ function Todos() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setError({ error: true, message: error.message });
+      setAlert({ alert: true, message: error.message });
     }
     setNewTodoText("");
   };
@@ -106,7 +122,7 @@ function Todos() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setError({ error: true, message: error.message });
+      setAlert({ alert: true, message: error.message });
     }
   };
 
@@ -119,7 +135,7 @@ function Todos() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      setError({ error: true, message: error.message });
+      setAlert({ alert: true, message: error.message });
     }
   };
 
@@ -153,7 +169,7 @@ function Todos() {
     } catch (error) {
       fetchAllTodos(currentPage);
       setLoading(false);
-      setError({ error: true, message: error.message });
+      setAlert({ alert: true, message: error.message });
     }
   };
 
@@ -183,19 +199,21 @@ function Todos() {
           setDueDate,
         }}
       />
-      {todos.length > 0 && (
-        <DraggableList
-          {...{
-            todos,
-            toggleTodoCompleted,
-            onDragEnd,
-            loading,
-            hasMore,
-            loadMore,
-          }}
-          deleteTodo={(id) => deleteATodo(id)}
-        />
-      )}
+      <div className={classes.listArea}>
+        {todos.length > 0 && (
+          <DraggableList
+            {...{
+              todos,
+              toggleTodoCompleted,
+              onDragEnd,
+              loading,
+              hasMore,
+              loadMore,
+            }}
+            deleteTodo={(id) => deleteATodo(id)}
+          />
+        )}
+      </div>
 
       <Footer
         {...{ loading, fetchedDueTodos }}
@@ -204,9 +222,10 @@ function Todos() {
           viewDueTodos();
         }}
       />
-      {error.error && (
+
+      {alert.alert && (
         <div className={classes.alert}>
-          <Alert severity="error">{error.message}</Alert>
+          <Alert severity={alert.type}>{alert.message}</Alert>
         </div>
       )}
     </Container>
