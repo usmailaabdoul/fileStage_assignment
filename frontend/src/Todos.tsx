@@ -15,6 +15,7 @@ import {
   ITodosResponse,
   IAddNewTodoResponse,
 } from "./api/todo";
+import axios from "axios";
 
 const useStyles = makeStyles({
   container: {
@@ -63,11 +64,8 @@ function Todos() {
     type: "error",
   });
 
-  const isAxiosError = (candidate: any): candidate is ApiError => {
-    return candidate.isAxiosError === true;
-  };
   const showAlert = (error: any) => {
-    if (isAxiosError(error)) {
+    if (axios.isAxiosError(error)) {
       return setAlert({
         alert: true,
         message: error.message,
@@ -103,18 +101,7 @@ function Todos() {
       }
     } catch (error) {
       setLoading(false);
-      if (isAxiosError(error)) {
-        return setAlert({
-          alert: true,
-          message: error.message,
-          type: "error",
-        });
-      }
-      setAlert({
-        alert: true,
-        message: "An unexpected error occurred",
-        type: "error",
-      });
+      showAlert(error);
     }
   };
 

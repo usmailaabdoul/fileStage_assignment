@@ -1,6 +1,7 @@
 import { FC } from "react";
-import { Button, Icon, Box, CircularProgress } from "@material-ui/core";
+import { Box, CircularProgress } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import { Button } from '../components';
 
 const useStyles = makeStyles({
   dueBtn: {
@@ -19,6 +20,7 @@ const useStyles = makeStyles({
   },
   footer: {
     display: "flex",
+    marginTop: "20px"
   },
 });
 
@@ -34,21 +36,17 @@ const Footer: FC<IFooter> = ({ loading, fetchedDueTodos, onClick }) => {
   return (
     <Box className={classes.footer}>
       <Button
-        className={classes.dueBtn}
-        startIcon={<Icon>event</Icon>}
+        icon="event"
         onClick={onClick}
-        data-testid="fetch-dueTodos-btn"
-      >
-        {fetchedDueTodos ? "All todos" : "Due today"}
-      </Button>
-
+        label={fetchedDueTodos ? "All todos" : "Due today"}
+        dataTestid="fetch-dueTodos-btn"
+      />
       {loading && (
         <Box
           sx={{
             display: "flex",
             justifyContent: "center",
             marginTop: "20px",
-            marginLeft: "200px",
           }}
           data-testid="loader"
         >

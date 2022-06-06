@@ -1,14 +1,13 @@
 import React from "react";
 import {
   Typography,
-  Button,
-  Icon,
   Paper,
   Box,
   TextField,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { Button } from '../components';
 
 const useStyles = makeStyles({
   addTodoContainer: {
@@ -75,13 +74,11 @@ const Header = ({
             />
           </Box>
           <Button
-            className={classes.addTodoButton}
-            startIcon={<Icon>add</Icon>}
+            icon="add"
             onClick={() => addTodo(newTodoText)}
-            data-testid="addTodo-btn"
-          >
-            Add
-          </Button>
+            label="Add"
+            dataTestid="addTodo-btn"
+          />
         </Box>
       </Paper>
     </Box>
