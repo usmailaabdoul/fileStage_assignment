@@ -66,7 +66,7 @@ const Header = ({
             <DesktopDatePicker
               renderInput={(props) => <TextField {...props} />}
               label="Date desktop"
-              inputFormat="MM/dd/yyyy"
+              inputFormat="DD/MM/YYYY"
               value={dueDate}
               onChange={(newValue) => {
                 setDueDate(newValue);
