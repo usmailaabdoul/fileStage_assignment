@@ -1,10 +1,12 @@
+import axios from "axios";
+
 const baseUrl = "http://localhost:3001/api";
 const headers = {
   Accept: "application/json",
   "Content-Type": "application/json",
 };
 
-export interface ITodos {
+export interface ITodosResponse {
   data: Array<ITodo>;
   currentPage: number;
   totalPages: number;
@@ -24,46 +26,80 @@ export interface ITodo {
   dueDate: string;
 }
 
-export const fetchTodos = async (
-  page: number,
-  filter: string | undefined
-): Promise<ITodos> => {
+export const fetchTodos = async (page: number, filter: string | undefined) => {
   const _filter = filter ? `&filter=${filter}` : "";
+  const url = `${baseUrl}?pageNo=${page}${_filter}`;
 
-  let res = await fetch(`${baseUrl}?pageNo=${page}${_filter}`);
-  res = await res.json();
-  return res as unknown as ITodos;
+  try {
+    let { data } = await axios.get<ITodosResponse>(url, { headers });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
 };
 
-export const addNewTodos = async (todo: IAddTodo) => {
-  const body = JSON.stringify(todo);
-  let res = await fetch(`${baseUrl}`, {
-    method: "POST",
-    headers,
-    body,
-  });
+export interface IAddNewTodoResponse {
+  data: ITodo;
+  totalPages: number;
+}
 
-  res = await res.json();
-  return res as unknown as ITodos;
+export const addNewTodo = async (todo: IAddTodo) => {
+  try {
+    let { data } = await axios.post<IAddNewTodoResponse>(baseUrl, todo, {
+      headers,
+    });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
 };
 
 export const updateTodo = async (id: string, data: { completed: boolean }) => {
-  const body = JSON.stringify(data);
-  await fetch(`${baseUrl}/${id}`, {
-    method: "PUT",
-    headers,
-    body,
-  });
+  const url = `${baseUrl}/${id}`;
 
-  return;
+  try {
+    await axios.put<IAddNewTodoResponse>(url, data, {
+      headers,
+    });
+    return;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
 };
 
 export const deleteTodo = async (id: string) => {
-  await fetch(`${baseUrl}/${id}`, {
-    method: "DELETE",
-  });
+  const url = `${baseUrl}/${id}`;
 
-  return;
+  try {
+    await axios.delete<IAddNewTodoResponse>(url);
+    return;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
 };
 
 export const orderTodo = async (
@@ -73,12 +109,18 @@ export const orderTodo = async (
     nextElIndexNumber: number | undefined;
   }
 ) => {
-  const body = JSON.stringify(data);
-  await fetch(`${baseUrl}/order-todos/${id}`, {
-    method: "PUT",
-    headers,
-    body,
-  });
+  const url = `${baseUrl}/order-todos/${id}`;
 
-  return;
+  try {
+    await axios.put<IAddNewTodoResponse>(url, data);
+    return;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
 };

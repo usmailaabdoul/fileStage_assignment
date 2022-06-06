@@ -8,7 +8,7 @@ import {
 } from "react-beautiful-dnd";
 
 import DraggableListItem from "./DraggableListItem";
-import { ITodos } from "../api/todo";
+import { ITodo } from "../api/todo";
 
 const useStyles = makeStyles({
   todosContainer: { marginTop: 10, padding: 10 },
@@ -25,7 +25,7 @@ const useStyles = makeStyles({
 });
 
 interface IDraggableList {
-  todos: ITodos["data"];
+  todos: ITodo[];
   loading: boolean;
   hasMore: boolean;
   toggleTodoCompleted: (id: string) => void;

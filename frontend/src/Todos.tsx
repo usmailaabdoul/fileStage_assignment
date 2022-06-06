@@ -8,11 +8,12 @@ import { DraggableList, Header, Footer } from "./components";
 import { reOrderTodos } from "./utils";
 import {
   fetchTodos,
-  addNewTodos,
+  addNewTodo,
   updateTodo,
   deleteTodo,
   orderTodo,
-  ITodos,
+  ITodosResponse,
+  IAddNewTodoResponse,
 } from "./api/todo";
 
 const useStyles = makeStyles({
@@ -41,9 +42,13 @@ interface IAlert {
   type: "error" | "warning" | "info";
 }
 
+interface ApiError {
+  message: string;
+}
+
 function Todos() {
   const classes = useStyles();
-  const [todos, setTodos] = useState<ITodos["data"]>([]);
+  const [todos, setTodos] = useState<ITodosResponse["data"]>([]);
   const [newTodoText, setNewTodoText] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(false);
@@ -58,23 +63,56 @@ function Todos() {
     type: "error",
   });
 
+  const isAxiosError = (candidate: any): candidate is ApiError => {
+    return candidate.isAxiosError === true;
+  };
+  const showAlert = (error: any) => {
+    if (isAxiosError(error)) {
+      return setAlert({
+        alert: true,
+        message: error.message,
+        type: "error",
+      });
+    }
+    setAlert({
+      alert: true,
+      message: "An unexpected error occurred",
+      type: "error",
+    });
+  };
+
   const fetchAllTodos = async (page: number, filter: string | undefined) => {
     setLoading(true);
     try {
-      let res: ITodos = await fetchTodos(page, filter);
-      setTodos((prev: ITodos["data"]) => [...prev, ...res.data]);
-      setCurrentPage(res.currentPage);
-      setHasMore(res.totalPages > res.currentPage);
-      setLoading(false);
+      let res: ITodosResponse | string = await fetchTodos(page, filter);
 
-      if (res.data.length === 0 && filter && filter.length > 0) {
-        setAlert({ alert: true, message: "No due todos today", type: "info" });
+      if (typeof res !== "string") {
+        let value = res;
+        setTodos((prev: ITodosResponse["data"]) => [...prev, ...value.data]);
+        setCurrentPage(value.currentPage);
+        setHasMore(value.totalPages > value.currentPage);
+        setLoading(false);
+
+        if (value.data.length === 0 && filter && filter.length > 0) {
+          setAlert({
+            alert: true,
+            message: "No due todos today",
+            type: "info",
+          });
+        }
       }
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
+      if (isAxiosError(error)) {
+        return setAlert({
+          alert: true,
+          message: error.message,
+          type: "error",
+        });
+      }
       setAlert({
         alert: true,
-        message: error.message,
+        message: "An unexpected error occurred",
         type: "error",
       });
     }
@@ -105,19 +143,21 @@ function Todos() {
     }
 
     try {
-      let res: ITodos = await addNewTodos({
+      let res: IAddNewTodoResponse | string = await addNewTodo({
         text,
         dueDate: new Date(dueDate).toLocaleDateString(),
       });
 
-      if (res.totalPages === currentPage) {
-        const newTodos = [...todos, res.data];
-        setTodos(newTodos as unknown as ITodos["data"]);
+      if (typeof res !== "string") {
+        if (res.totalPages === currentPage) {
+          const newTodos = [...todos, res.data];
+          setTodos(newTodos);
+        }
+        setLoading(false);
       }
+    } catch (error) {
       setLoading(false);
-    } catch (error: any) {
-      setLoading(false);
-      setAlert({ alert: true, message: error.message, type: "error" });
+      showAlert(error);
     }
     setNewTodoText("");
     setDueDate(new Date().toLocaleDateString());
@@ -126,18 +166,8 @@ function Todos() {
   const toggleTodoCompleted = async (id: string) => {
     setLoading(true);
     try {
-      let index = todos.findIndex((todo) => todo.id === id);
-
-      if (index < 0) {
-        return setAlert({
-          alert: true,
-          message: "Can't fine this todo",
-          type: "error",
-        });
-      }
-
       await updateTodo(id, {
-        completed: !todos[index].completed,
+        completed: !todos.find((todo) => todo.id === id)?.completed,
       });
 
       const newTodos = [...todos];
@@ -148,9 +178,9 @@ function Todos() {
       };
       setTodos(newTodos);
       setLoading(false);
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
-      setAlert({ alert: true, message: error.message, type: "error" });
+      showAlert(error);
     }
   };
 
@@ -161,9 +191,9 @@ function Todos() {
 
       setTodos(todos.filter((todo) => todo.id !== id));
       setLoading(false);
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
-      setAlert({ alert: true, message: error.message, type: "error" });
+      showAlert(error);
     }
   };
 
@@ -194,10 +224,9 @@ function Todos() {
       });
 
       setLoading(false);
-    } catch (error: any) {
+    } catch (error) {
       fetchAllTodos(currentPage, undefined);
-      setLoading(false);
-      setAlert({ alert: true, message: error.message, type: "error" });
+      showAlert(error);
     }
   };
 

@@ -1,6 +1,6 @@
-import { ITodos } from "../../api/todo";
+import { ITodo } from "../../api/todo";
 
-export const todos: ITodos["data"] = [
+export const todos: ITodo[] = [
   {
     id: "ed3fc3b2-67f8-4102-84ed-dee1a6ff9c11",
     text: "todo 2",
