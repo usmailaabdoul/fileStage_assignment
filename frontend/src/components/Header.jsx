@@ -65,7 +65,7 @@ const Header = ({
           <Box className={classes.datePicker}>
             <DesktopDatePicker
               renderInput={(props) => <TextField {...props} />}
-              label="Date desktop"
+              label="Due date"
               inputFormat="DD/MM/YYYY"
               value={dueDate}
               onChange={(newValue) => {
