@@ -6,7 +6,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { Button } from '../components';
 
 const useStyles = makeStyles({
@@ -63,7 +63,7 @@ const Header = ({
             />
           </Box>
           <Box className={classes.datePicker}>
-            <DesktopDatePicker
+            <DateTimePicker
               renderInput={(props) => <TextField {...props} />}
               label="Due date"
               inputFormat="DD/MM/YYYY"

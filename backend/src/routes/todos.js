@@ -19,6 +19,22 @@ router.get('/', async (req, res) => {
   return res.json(response);
 });
 
+router.get('/custom-fetch', async (req, res) => {
+  const { pageNo } = req.query;
+  const todos = database.client.db('todos').collection('todos');
+
+  if (pageNo < 0 || pageNo === 0) {
+    res.status(400);
+    const response = { message: 'invalid page number, should start with 1' };
+    return res.json(response);
+  }
+
+  const response = await TodoService.customGetTodos(todos, pageNo);
+
+  res.status(200);
+  return res.json(response);
+});
+
 router.post('/', async (req, res) => {
   const { text, dueDate } = req.body;
   const todos = database.client.db('todos').collection('todos');

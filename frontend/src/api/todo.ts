@@ -14,7 +14,7 @@ export interface ITodosResponse {
 
 export interface IAddTodo {
   text: string;
-  dueDate: string;
+  dueDate: Date;
 }
 
 export interface ITodo {
@@ -43,6 +43,23 @@ export const fetchTodos = async (page: number, filter: string | undefined) => {
     }
   }
 };
+
+export const customFetch = async (page: number) => {
+  const url = `${baseUrl}/custom-fetch/?pageNo=${page}`;
+
+  try {
+    let { data } = await axios.get<ITodosResponse>(url, { headers });
+    return data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log("error message: ", error.message);
+      return error.message;
+    } else {
+      console.log("unexpected error: ", error);
+      return "An unexpected error occurred";
+    }
+  }
+}
 
 export interface IAddNewTodoResponse {
   data: ITodo;

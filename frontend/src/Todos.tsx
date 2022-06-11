@@ -11,6 +11,7 @@ import {
   addNewTodo,
   updateTodo,
   deleteTodo,
+  customFetch,
   orderTodo,
   ITodosResponse,
   IAddNewTodoResponse,
@@ -54,9 +55,7 @@ function Todos() {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [dueDate, setDueDate] = useState<string>(
-    new Date().toLocaleDateString()
-  );
+  const [dueDate, setDueDate] = useState<string | undefined>();
   const [fetchedDueTodos, setFetchedDueTodos] = useState<boolean>(false);
   const [alert, setAlert] = useState<IAlert>({
     alert: false,
@@ -120,11 +119,11 @@ function Todos() {
   const addTodo = async (text: string) => {
     setLoading(true);
 
-    if (text.length === 0 || !dueDate) {
+    if (text.length === 0) {
       setLoading(false);
       return setAlert({
         alert: true,
-        message: "Enter valid text and due Date to proceed",
+        message: "Enter a valid todo to proceed",
         type: "error",
       });
     }
@@ -132,7 +131,7 @@ function Todos() {
     try {
       let res: IAddNewTodoResponse | string = await addNewTodo({
         text,
-        dueDate: new Date(dueDate).toLocaleDateString(),
+        dueDate: !dueDate ? new Date() : new Date(dueDate),
       });
 
       if (typeof res !== "string") {
@@ -147,7 +146,7 @@ function Todos() {
       showAlert(error);
     }
     setNewTodoText("");
-    setDueDate(new Date().toLocaleDateString());
+    setDueDate(undefined);
   };
 
   const toggleTodoCompleted = async (id: string) => {
@@ -171,12 +170,24 @@ function Todos() {
     }
   };
 
+  // Fixing delete issue adding a custom fetch to get all todos from a particular page and below
   const deleteATodo = async (id: string) => {
     setLoading(true);
     try {
       await deleteTodo(id);
 
       setTodos(todos.filter((todo) => todo.id !== id));
+      
+      let res: ITodosResponse | string = await customFetch(currentPage);
+
+      if (typeof res !== "string") {
+        let value = res;
+        setTodos(value.data);
+        setCurrentPage(value.currentPage);
+        setHasMore(value.totalPages > value.currentPage);
+        setLoading(false);
+      }
+
       setLoading(false);
     } catch (error) {
       setLoading(false);
