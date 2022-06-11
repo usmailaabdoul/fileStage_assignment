@@ -61,48 +61,59 @@ const deleteTodo = async (todos, id) => {
 };
 
 const orderTodos = async ({
-  todos, id, currElIndexNumber, prevElIndexNumber, nextElIndexNumber,
+  todos, id, newPositionIndex,
 }) => {
-  await todos.updateOne({ id }, { $set: { index_number: currElIndexNumber } });
+  await todos.updateOne({ id }, {
+    $set: {
+      index_number: newPositionIndex,
+      updated_at: new Date(),
+    },
+  });
+  // eslint-disable-next-line no-underscore-dangle
+  const _todos = await todos.find({}).sort({ index_number: 1 }).toArray();
+  console.log({ _todos });
+  // if (
+  //   Math.abs(currElIndexNumber - prevElIndexNumber) <= 1
+  //   || Math.abs(currElIndexNumber - nextElIndexNumber) <= 1
+  // ) {
+  //   // eslint-disable-next-line no-underscore-dangle
+  //   const _todos = await todos.find({}).sort({ index_number: 1 }).toArray();
+  //   const sameIndexNums = [];
+  //   const indexs = [];
 
-  if (
-    Math.abs(currElIndexNumber - prevElIndexNumber) <= 1
-    || Math.abs(currElIndexNumber - nextElIndexNumber) <= 1
-  ) {
-    // eslint-disable-next-line no-underscore-dangle
-    const _todos = await todos.find({}).sort({ index_number: 1 }).toArray();
-    const sameIndexNums = [];
-    const indexs = [];
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < _todos.length; i++) {
-      if (_todos[i].index_number === currElIndexNumber) {
-        sameIndexNums.push(_todos[i]);
-        indexs.push(i);
-        if (_todos[i + 1] && _todos[i + 1].index_number === currElIndexNumber) {
-          sameIndexNums.push(_todos[i + 1]);
-          indexs.push(i + 1);
-        }
-        break;
-      }
-    }
+  //   // Finding todos that have the same indexes, checking current todo and the next todo
+  //   // eslint-disable-next-line no-plusplus
+  //   for (let i = 0; i < _todos.length; i++) {
+  //     if (_todos[i].index_number === currElIndexNumber) {
+  //       sameIndexNums.push(_todos[i]);
+  //       indexs.push(i);
+  //       if (_todos[i + 1] && _todos[i + 1].index_number === currElIndexNumber) {
+  //         sameIndexNums.push(_todos[i + 1]);
+  //         indexs.push(i + 1);
+  //       }
+  //       break;
+  //     }
+  //   }
 
-    sameIndexNums.sort((a, b) => b.updated_at - a.updated_at);
-    _todos.splice(indexs[0], 2);
-    _todos.splice(indexs[0], 0, ...sameIndexNums);
+  //   console.log({ sameIndexNums });
+  //   sameIndexNums.sort((a, b) => b.updated_at - a.updated_at);
+  //   console.log({ _todos });
+  //   // _todos.splice(indexs[0], 2);
+  //   _todos.splice(indexs[0], 2, ...sameIndexNums);
 
-    await Promise.all(
-      _todos.map(async (ele, i) => {
-        const newIndex = (i + 1) * 1024;
+  //   await Promise.all(
+  //     _todos.map(async (ele, i) => {
+  //       const newIndex = (i + 1) * 1024;
 
-        todos.updateOne({ id: ele.id }, {
-          $set: {
-            index_number: newIndex,
-            updated_at: new Date(),
-          },
-        });
-      }),
-    );
-  }
+  //       todos.updateOne({ id: ele.id }, {
+  //         $set: {
+  //           index_number: newIndex,
+  //           updated_at: new Date(),
+  //         },
+  //       });
+  //     }),
+  //   );
+  // }
 };
 
 module.exports = {

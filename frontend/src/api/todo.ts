@@ -105,8 +105,8 @@ export const deleteTodo = async (id: string) => {
 export const orderTodo = async (
   id: string,
   data: {
-    prevElIndexNumber: number | undefined;
-    nextElIndexNumber: number | undefined;
+    targetPosition: number;
+    initalPosition: number;
   }
 ) => {
   const url = `${baseUrl}/order-todos/${id}`;

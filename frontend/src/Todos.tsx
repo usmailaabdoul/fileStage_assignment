@@ -185,29 +185,19 @@ function Todos() {
   };
 
   const onDragEnd = async ({ destination, source }: DropResult) => {
-    const currEleID: string = todos[source.index].id;
-    let prevElIndexNumber: number | undefined;
-    let nextElIndexNumber: number | undefined;
+    const dragEleId: string = todos[source.index].id;
 
     // dropped outside the list
     if (!destination) return;
-
-    if (todos[destination.index - 1]) {
-      prevElIndexNumber = todos[destination.index].index_number;
-    }
-
-    if (todos[destination.index + 1]) {
-      nextElIndexNumber = todos[destination.index].index_number;
-    }
 
     const newTodos = reOrderTodos(todos, source.index, destination.index);
     setTodos(newTodos);
 
     try {
       setLoading(true);
-      await orderTodo(currEleID, {
-        prevElIndexNumber,
-        nextElIndexNumber,
+      await orderTodo(dragEleId, {
+        initalPosition: source.index,
+        targetPosition: destination.index, 
       });
 
       setLoading(false);
