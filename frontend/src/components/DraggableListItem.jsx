@@ -28,6 +28,15 @@ const useStyles = makeStyles({
   draggingListItem: {
     background: "rgb(235,235,235)",
   },
+  checkBox: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+  },
+  dragIcon: {
+    marginBottom: -5,
+    color: '#ababac'
+  }
 });
 
 const DraggableListItem = ({
@@ -56,7 +65,10 @@ const DraggableListItem = ({
             snapshot.isDragging ? classes.draggingListItem : ""
           )}
         >
-          <Box flex={1}>
+          <Box className={classes.checkBox}>
+            <Box className={classes.dragIcon}>
+              <Icon>drag_indicator</Icon>
+            </Box>
             <Checkbox
               checked={completed}
               onChange={() => toggleTodoCompleted(id)}
