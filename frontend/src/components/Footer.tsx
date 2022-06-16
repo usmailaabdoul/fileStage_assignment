@@ -46,7 +46,7 @@ const Footer: FC<IFooter> = ({ loading, fetchedDueTodos, onClick }) => {
           sx={{
             display: "flex",
             justifyContent: "center",
-            marginTop: "20px",
+            marginLeft: "100px",
           }}
           data-testid="loader"
         >
