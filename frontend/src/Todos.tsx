@@ -80,28 +80,30 @@ function Todos() {
 
   const fetchAllTodos = async (page: number, filter: string | undefined) => {
     setLoading(true);
-    try {
-      let res: ITodosResponse | string = await fetchTodos(page, filter);
+    setTimeout(async () => {
+      try {
+        let res: ITodosResponse | string = await fetchTodos(page, filter);
 
-      if (typeof res !== "string") {
-        let value = res;
-        setTodos((prev: ITodosResponse["data"]) => [...prev, ...value.data]);
-        setCurrentPage(value.currentPage);
-        setHasMore(value.totalPages > value.currentPage);
-        setLoading(false);
+        if (typeof res !== "string") {
+          let value = res;
+          setTodos((prev: ITodosResponse["data"]) => [...prev, ...value.data]);
+          setCurrentPage(value.currentPage);
+          setHasMore(value.totalPages > value.currentPage);
+          setLoading(false);
 
-        if (value.data.length === 0 && filter && filter.length > 0) {
-          setAlert({
-            alert: true,
-            message: "No due todos today",
-            type: "info",
-          });
+          if (value.data.length === 0 && filter && filter.length > 0) {
+            setAlert({
+              alert: true,
+              message: "No due todos today",
+              type: "info",
+            });
+          }
         }
+      } catch (error) {
+        setLoading(false);
+        showAlert(error);
       }
-    } catch (error) {
-      setLoading(false);
-      showAlert(error);
-    }
+    }, 1500)
   };
 
   useEffect(() => {
@@ -177,7 +179,7 @@ function Todos() {
       await deleteTodo(id);
 
       setTodos(todos.filter((todo) => todo.id !== id));
-      
+
       let res: ITodosResponse | string = await customFetch(currentPage);
 
       if (typeof res !== "string") {
@@ -208,7 +210,7 @@ function Todos() {
       setLoading(true);
       await orderTodo(dragEleId, {
         initalPosition: source.index,
-        targetPosition: destination.index, 
+        targetPosition: destination.index,
       });
 
       setLoading(false);
